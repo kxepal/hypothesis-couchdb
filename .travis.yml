@@ -1,0 +1,13 @@
+language: python
+python:
+  - 3.3
+  - 3.4
+
+services:
+  - couchdb
+
+before_script:
+  - make dev
+
+script:
+  - make check
