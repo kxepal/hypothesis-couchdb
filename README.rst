@@ -27,5 +27,11 @@ completes that goal, producing values for all JSON types:
   arrays and objects;
 
 
+hypothesis_couchdb.document
+===========================
+
+Set of strategies to generate CouchDB documents and their special fields.
+
+
 .. _Apache 2: http://www.apache.org/licenses/LICENSE-2.0.html
 .. _Hypothesis: https://github.com/DRMacIver/hypothesis
