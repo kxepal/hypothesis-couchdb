@@ -14,6 +14,7 @@
 #
 
 import math
+from functools import reduce
 
 import hypothesis.strategies as st
 
@@ -91,20 +92,54 @@ def arrays(elements, *,
                     unique_by=unique_by)
 
 
-def objects(elements, *, min_size=None, average_size=None, max_size=None):
+def objects(elements=None, *,
+            required_fields=None,
+            optional_fields=None,
+            min_size=None,
+            average_size=None,
+            max_size=None):
     """Returns a strategy that generates dicts of specified `elements`.
+
     The `elements` must be valid Hypothesis strategy. The keys are ensured to
     be string only as JSON requires.
 
-    While choice of elements left here for user side, it's not recommended to
+    While choice of `elements` left here for user side, it's not recommended to
     use anything that produces non-serializable to JSON values.
 
-    Basically is a proxy to ``hypothesis.strategies.dictionaries()``.
+    Additionally, it's possible to ensure that some fields with values generated
+    by a certain strategy are always exists (`required_fields`) or just optional
+    (`optional_fields`).
     """
-    return st.dictionaries(strings(), elements,
-                           min_size=min_size,
-                           average_size=average_size,
-                           max_size=max_size)
+    def check_type(varname, var, expected):
+        if not isinstance(var, expected):
+            raise TypeError('{} must be {}, got {}'.format(
+                varname, expected, type(var)))
+
+    acc = []
+    if required_fields:
+        check_type('required_fields', required_fields, dict)
+        for key in required_fields:
+            check_type('required field name', key, str)
+        acc.append(st.fixed_dictionaries(required_fields))
+
+    if optional_fields:
+        check_type('optional_fields', optional_fields, dict)
+        for key in optional_fields:
+            check_type('optional field name', key, str)
+        acc.append(st.sets(st.sampled_from(optional_fields)).flatmap(
+            lambda keys: st.fixed_dictionaries({key: optional_fields[key]
+                                                for key in keys})))
+    if elements:
+        acc.append(st.dictionaries(strings(), elements,
+                                   min_size=min_size,
+                                   average_size=average_size,
+                                   max_size=max_size))
+
+    if not acc:
+        raise RuntimeError('object must have any strategy for fields')
+
+    return st.tuples(*reversed(acc)).map(
+        lambda s: reduce(lambda a, d: dict(a, **d), s))
 
 
 def values():

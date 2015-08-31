@@ -17,6 +17,7 @@ import functools
 import math
 
 import hypothesis
+import hypothesis.strategies as st
 
 from .. import json
 
@@ -73,3 +74,53 @@ def test_objects(value):
     for key, item in value.items():
         test_strings(key)
         test_numbers(item)
+
+
+@hypothesis.given(json.objects(required_fields={'test': json.nulls(),
+                                                'passed': json.strings()}))
+def test_objects_always_contains_required_fields(value):
+    assert isinstance(value, dict)
+    assert set(value) == {'test', 'passed'}
+    test_nulls(value['test'])
+    test_strings(value['passed'])
+
+
+def test_objects_may_contains_optional_fields():
+    st = json.objects(optional_fields={'test': json.nulls()})
+    assert {} == hypothesis.find(st, lambda _: True)
+    assert {'test': None} == hypothesis.find(st, lambda v: 'test' in v)
+
+
+def test_objects_with_required_and_optional_fields():
+    obj = json.objects(required_fields={'always': st.just(True)},
+                       optional_fields={'maybe': st.just(False)})
+    assert {'always': True} == hypothesis.find(obj, lambda _: True)
+    assert {'always': True,
+            'maybe': False} == hypothesis.find(obj, lambda v: 'maybe' in v)
+
+
+def test_objects_requires_any_fields_definition():
+    try:
+        json.objects()
+    except RuntimeError:
+        pass
+    else:
+        assert False, 'exception expected'
+
+
+def test_objects_required_fields_must_have_string_keys():
+    try:
+        json.objects(required_fields={42: 24})
+    except TypeError:
+        pass
+    else:
+        assert False, 'exception expected'
+
+
+def test_objects_optional_fields_must_have_string_keys():
+    try:
+        json.objects(optional_fields={42: 24})
+    except TypeError:
+        pass
+    else:
+        assert False, 'exception expected'
