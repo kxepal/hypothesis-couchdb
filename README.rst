@@ -30,7 +30,24 @@ completes that goal, producing values for all JSON types:
 hypothesis_couchdb.document
 ===========================
 
-Set of strategies to generate CouchDB documents and their special fields.
+Contains strategies to generate CouchDB various documents:
+
+- ``documents``: semantic wrapper around ``json.objects`` to generate JSON
+  documents;
+
+Additionally provides strategies to generate valid values for special fields:
+
+- ``id``
+- ``rev``
+- ``deleted``
+- ``revisions``
+- ``revs_info``
+- ``local_seq``
+- ``conflicts``
+- ``deleted_conflicts``
+
+CouchDB has these fields prefixed with underscore ``_`` character while
+strategies are not (leading underscore has special mean in Python).
 
 
 .. _Apache 2: http://www.apache.org/licenses/LICENSE-2.0.html
