@@ -92,8 +92,7 @@ function(newdoc, olddoc){
                     'map': 'function(doc){ emit(doc.key, doc.value) }',
                     'reduce': '_count'
                 }
-            },
-            'version': 3
+            }
         }
 
     def data_type(self):
@@ -180,12 +179,15 @@ function(newdoc, olddoc){
                     headers=self.headers)
         else:
             local_ddoc = self.ddoc()
-            if local_ddoc['version'] != remote_ddoc.get('version', 0):
-                ddoc = self.ddoc()
-                ddoc['_rev'] = remote_ddoc['_rev']
+            expected_view = local_ddoc['views']['by_key']
+            stored_view = remote_ddoc.get('views', {}).get('by_key', {})
+
+            if expected_view != stored_view:
+                remote_ddoc.setdefault('views', {})
+                remote_ddoc['views']['by_key'] = expected_view
                 request('PUT',
                         url(self.url, '_design', 'hypothesis'),
-                        data=json.dumps(ddoc).encode(),
+                        data=json.dumps(remote_ddoc).encode(),
                         headers=self.headers)
 
         self._ensured_ddoc_exists = True

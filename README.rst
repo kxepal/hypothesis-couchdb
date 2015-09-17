@@ -43,7 +43,7 @@ don't!) then in order to make everything works you need to make two things:
 
 - Create design document (see ``hypothesis_couchdb/example_db.py`` for sources)::
 
-    curl -X PUT http://localhost:5984/hypothesis/_design/hypothesis --user admin -d {"_id": "_design/hypothesis","_rev": "1-a981fdf7393c0eb31115edd08d3abe7f","validate_doc_update": "\nfunction(newdoc, olddoc){\n  var assert = function(cond) {\n    if(!cond) {\n      throw({forbidden: \'bad doc\'})\n    }\n  }\n\n  if(newdoc._deleted === true){\n    return\n  }\n\n  assert(isArray(newdoc.key));\n  assert(isArray(newdoc.value));\n}","version": 1, "views": { "by_key": {"map": "function(doc){ emit(doc.key, doc.value) }", "reduce": "_count"}}}'
+    curl -X PUT http://localhost:5984/hypothesis/_design/hypothesis --user admin -d '{"_id": "_design/hypothesis", "views": { "by_key": {"map": "function(doc){ emit(doc.key, doc.value) }", "reduce": "_count"}}}'
 
 `CouchExampleDB` will not require admin privileges anymore to setup valid
 context. Additionally, you may want to have special user that hypothesis will
