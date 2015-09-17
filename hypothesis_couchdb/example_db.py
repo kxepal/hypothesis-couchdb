@@ -83,7 +83,9 @@ function(newdoc, olddoc){
   }
 
   assert(isArray(newdoc.key));
-  assert(isArray(newdoc.value));
+  assert(newdoc.value === null
+         || !isNaN(newdoc.value)
+         || isArray(newdoc.value));
 }''',
             'views': {
                 'by_key': {
@@ -91,7 +93,7 @@ function(newdoc, olddoc){
                     'reduce': '_count'
                 }
             },
-            'version': 2
+            'version': 3
         }
 
     def data_type(self):
