@@ -78,6 +78,10 @@ function(newdoc, olddoc){
     return
   }
 
+  if(newdoc.type !== 'example'){
+    return
+  }
+
   assert(isArray(newdoc.key));
   assert(isArray(newdoc.value));
 }''',
@@ -87,7 +91,7 @@ function(newdoc, olddoc){
                     'reduce': '_count'
                 }
             },
-            'version': 1
+            'version': 2
         }
 
     def data_type(self):
@@ -100,7 +104,8 @@ function(newdoc, olddoc){
             method='PUT',
             url=url(self.url, str(uuid.uuid4())),
             data=json.dumps({'key': format_key(key),
-                             'value': value}).encode(),
+                             'value': value,
+                             'type': 'example'}).encode(),
             headers=self.headers)
 
     def delete(self, key: str, value: list):
