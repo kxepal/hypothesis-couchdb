@@ -20,15 +20,10 @@ This module provides special backend to store these examples in CouchDB.
 To start use it, you need to update Hypothesis settings::
 
   import hypothesis
-  from hypothesis_couchdb import json
   from hypothesis_couchdb.example_db import CouchExampleDB
 
   # default database url is http://localhost:5984/hypothesis
-  with hypothesis.Settings(database=CouchExampleDB()):
-
-    @hypothesis.given(json.numbers())
-    def test_something(number):
-        ...
+  hypothesis.Settings.default = hypothesis.Settings(database=CouchExampleDB())
 
 The `CouchExampleDB` ensures that database is exists and design document too,
 so for initial setup may require administrator privileges in order to create
