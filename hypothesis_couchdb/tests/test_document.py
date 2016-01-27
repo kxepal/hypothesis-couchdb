@@ -86,7 +86,7 @@ class DocumentTestCase(unittest.TestCase):
             self.test_rev(rev)
 
     @hypothesis.given(document.revs_info())
-    def test_revisions(self, value):
+    def test_revs_info(self, value):
         self.assertIsInstance(value, list)
         self.assertGreater(len(value), 0)
 
