@@ -108,7 +108,7 @@ distcheck-34:  $(PYTHON34)
 
 
 flake:
-	@$(FLAKE8) --max-line-length=80 --statistics --exclude=tests --ignore=E501,F403 $(PROJECT)
+	@$(FLAKE8) --max-line-length=79 --statistics --exclude=tests $(PROJECT)
 
 
 .PHONY: pylint-report
