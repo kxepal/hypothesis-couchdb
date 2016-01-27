@@ -19,9 +19,10 @@ from os.path import join
 from setuptools import setup, find_packages
 
 name = 'hypothesis-couchdb'
+package = name.replace('-', '_')
 
 setup_dir = os.path.dirname(__file__)
-mod = importlib.import_module('{}.version'.format(name.replace('-', '_')))
+mod = importlib.import_module('{}.version'.format(package))
 long_description = open(join(setup_dir, 'README.rst')).read().strip()
 
 setup(
@@ -49,7 +50,7 @@ setup(
     ],
 
     packages=find_packages(),
-    test_suite='nose.collector',
+    test_suite='{}.tests'.format(package),
     zip_safe=False,
 
     install_requires=[
@@ -58,7 +59,4 @@ setup(
     extras_require={
 
     },
-    tests_require=[
-        'nose==1.3.7',
-    ]
 )

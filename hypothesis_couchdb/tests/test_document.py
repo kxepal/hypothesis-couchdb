@@ -15,119 +15,105 @@
 
 import string
 import hypothesis
+import unittest
 
-from .. import document
-from .. import json
-
-
-def test_document():
-    assert {} == hypothesis.find(document.documents(), lambda _: True)
-
-
-def test_document_optional_fields():
-    st = document.documents(optional_fields={'test': json.nulls()})
-    assert {} == hypothesis.find(st, lambda _: True)
-    assert {'test': None} == hypothesis.find(st, lambda v: 'test' in v)
+from hypothesis_couchdb import (
+    document,
+    json,
+)
 
 
-def test_document_required_fields():
-    st = document.documents(required_fields={'test': json.nulls()})
-    assert {'test': None} == hypothesis.find(st, lambda _: True)
+class DocumentTestCase(unittest.TestCase):
 
+    def test_document(self):
+        self.assertEqual(hypothesis.find(document.documents(), lambda _: True),
+                         {})
 
-@hypothesis.given(document.id())
-def test_id(value):
-    assert isinstance(value, str)
-    assert len(value) > 0
+    def test_document_optional_fields(self):
+        st = document.documents(optional_fields={'test': json.nulls()})
+        self.assertEqual(hypothesis.find(st, lambda _: True),
+                         {})
+        self.assertEqual(hypothesis.find(st, lambda v: 'test' in v),
+                         {'test': None})
 
+    def test_document_required_fields(self):
+        st = document.documents(required_fields={'test': json.nulls()})
+        self.assertEqual(hypothesis.find(st, lambda _: True), {'test': None})
 
-def test_id_with_bad_min_size():
-    try:
-        document.id(min_size=0)
-    except ValueError:
-        pass
-    else:
-        assert False, 'value error expected'
+    @hypothesis.given(document.id())
+    def test_id(self, value):
+        self.assertIsInstance(value, str)
+        self.assertGreater(len(value), 0)
 
-    try:
-        document.id(min_size=None)
-    except ValueError:
-        pass
-    else:
-        assert False, 'value error expected'
+    def test_id_with_bad_min_size(self):
+        with self.assertRaises(ValueError):
+            document.id(min_size=0)
 
+        with self.assertRaises(ValueError):
+            document.id(min_size=None)
 
-@hypothesis.given(document.rev())
-def test_rev(value):
-    assert isinstance(value, str)
-    assert len(value) > 0
+    @hypothesis.given(document.rev())
+    def test_rev(self, value):
+        self.assertIsInstance(value, str)
+        self.assertGreater(len(value), 0)
 
-    assert '-' in value
-    num, hash = value.split('-', 1)
+        self.assertIn('-', value)
+        num, hash = value.split('-', 1)
 
-    assert num.isdigit()
-    int(num)
+        self.assertTrue(num.isdigit())
+        int(num)
 
-    assert len(hash) == 32
-    assert set(hash).issubset(string.hexdigits)
+        self.assertEqual(len(hash), 32)
+        self.assertTrue(set(hash).issubset(string.hexdigits))
 
+    def test_deleted(self):
+        self.assertFalse(hypothesis.find(document.deleted(), lambda _: True))
+        self.assertTrue(hypothesis.find(document.deleted(), lambda v: v))
 
-def test_deleted():
-    value = hypothesis.find(document.deleted(), lambda _: True)
-    assert value is False
+    @hypothesis.given(document.revisions())
+    def test_revisions(self, value):
+        self.assertIsInstance(value, dict)
+        self.assertTrue(set(value).issubset({'ids', 'start'}))
 
-    value = hypothesis.find(document.deleted(), lambda v: v)
-    assert value is True
+        self.assertIsInstance(value['start'], int)
+        self.assertGreater(value['start'], 0)
 
+        self.assertIsInstance(value['ids'], list)
+        self.assertEqual(len(value['ids']), value['start'])
 
-@hypothesis.given(document.revisions())
-def test_revisions(value):
-    assert isinstance(value, dict)
-    assert set(value).issubset({'ids', 'start'})
+        for num, hash in zip(range(value['start'], 0, -1), value['ids']):
+            rev = str(num) + '-' + hash
+            self.test_rev(rev)
 
-    assert isinstance(value['start'], int)
-    assert value['start'] > 0
+    @hypothesis.given(document.revs_info())
+    def test_revisions(self, value):
+        self.assertIsInstance(value, list)
+        self.assertGreater(len(value), 0)
 
-    assert isinstance(value['ids'], list)
-    assert len(value['ids']) == value['start']
+        for item in value:
+            self.assertIsInstance(item, dict)
+            self.assertTrue(set(item).issubset({'rev', 'status'}))
 
-    for num, hash in zip(range(value['start'], 0, -1), value['ids']):
-        rev = str(num) + '-' + hash
-        test_rev(rev)
+            self.test_rev(item['rev'])
+            self.assertIn(item['status'], {'available', 'missing', 'deleted'})
 
+    @hypothesis.given(document.local_seq())
+    def test_local_seq(self, value):
+        self.assertIsInstance(value, int)
+        self.assertGreater(value, 0)
 
-@hypothesis.given(document.revs_info())
-def test_revisions(value):
-    assert isinstance(value, list)
-    assert len(value) > 0
+    @hypothesis.given(document.conflicts())
+    def test_conflicts(self, value):
+        self.assertIsInstance(value, list)
+        self.assertGreaterEqual(len(value), 0)
 
-    for item in value:
-        assert isinstance(item, dict)
-        assert set(item).issubset({'rev', 'status'})
+        for item in value:
+            self.test_rev(item)
 
-        test_rev(item['rev'])
-        assert item['status'] in ('available', 'missing', 'deleted')
+    @hypothesis.given(document.deleted_conflicts())
+    def test_deleted_conflicts(self, value):
+        self.assertIsInstance(value, list)
+        self.assertGreaterEqual(len(value), 0)
 
-
-@hypothesis.given(document.local_seq())
-def test_local_seq(value):
-    assert isinstance(value, int)
-    assert value > 0
-
-
-@hypothesis.given(document.conflicts())
-def test_conflicts(value):
-    assert isinstance(value, list)
-    assert len(value) >= 0
-
-    for item in value:
-        test_rev(item)
-
-
-@hypothesis.given(document.deleted_conflicts())
-def test_deleted_conflicts(value):
-    assert isinstance(value, list)
-    assert len(value) >= 0
-
-    for item in value:
-        test_rev(item)
+        for item in value:
+            self.test_rev(item)

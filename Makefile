@@ -58,7 +58,7 @@ purge:
 .PHONY: check
 # target: check - Runs test suite against mocked environment
 check: flake pylint-errors
-	${NOSE} --with-doctest ${PROJECT}
+	${PYTHON} setup.py test
 
 
 .PHONY: distcheck
