@@ -48,16 +48,12 @@ install:
 .PHONY: clean
 # target: clean - Removes intermediate and generated files
 clean:
-	rm -rf `find . -name __pycache__`
-	rm -f `find . -type f -name '*.py[co]' `
-	rm -f `find . -type f -name '*.orig' `
-	rm -f `find . -type f -name '*.rej' `
-	rm -f .coverage
-	rm -rf coverage
-	rm -rf build
-	rm -rf cover
-	make -C docs clean
-	python setup.py clean
+	@find $(PROJECT) -type f -name '*.py[co]' -delete
+	@find $(PROJECT) -type d -name '__pycache__' -delete
+	@rm -f .coverage
+	@rm -rf {build,cover,coverage}
+	@rm -rf "$(PROJECT).egg-info"
+	@$(PYTHON) setup.py clean
 
 
 .PHONY: purge
