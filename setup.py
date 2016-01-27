@@ -54,7 +54,7 @@ setup(
     zip_safe=False,
 
     install_requires=[
-        'hypothesis==1.11.0',
+        'hypothesis==2.0.0',
     ],
     extras_require={
         'dev': [
