@@ -1,7 +1,7 @@
 PROJECT=hypothesis_couchdb
 PYTHON=`which python3`
 PIP=`which pip`
-NOSE=`which nosetests`
+COVERAGE=`which coverage`
 PYLINT=`which pylint`
 FLAKE8=`which flake8`
 SPHINX=`which sphinx-build`
@@ -23,7 +23,7 @@ venv:
 .PHONY: dev
 # target: dev - Setups developer environment
 dev:
-	${PIP} install nose coverage pylint flake8
+	${PIP} install coverage pylint flake8
 	${PYTHON} setup.py develop
 
 
@@ -56,9 +56,25 @@ purge:
 
 
 .PHONY: check
-# target: check - Runs test suite against mocked environment
-check: flake pylint-errors
-	${PYTHON} setup.py test
+# target: check - Runs tests
+check:
+	@$(PYTHON) setup.py test
+
+
+.PHONY: check-all
+# target: check-all - Runs lint checks, tests and generates coverage report
+check-all: flake pylint-errors check-cov
+
+
+.PHONY: check-cov
+# target: check-cov - Runs tests and generates coverage report
+check-cov: coverage-run coverage-report
+
+
+coverage-run:
+	@$(COVERAGE) run setup.py test -q
+coverage-report:
+	@$(COVERAGE) report -m --fail-under=100 --show-missing
 
 
 .PHONY: distcheck
@@ -80,12 +96,6 @@ distcheck-34:
 
 flake:
 	${FLAKE8} --max-line-length=80 --statistics --exclude=tests --ignore=E501,F403 ${PROJECT}
-
-
-.PHONY: cover
-# target: cover - Generates coverage report
-cover:
-	${NOSE} --with-coverage --cover-html --cover-erase --cover-package=${PROJECT}
 
 
 .PHONY: pylint
