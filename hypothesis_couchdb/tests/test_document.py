@@ -54,17 +54,7 @@ class DocumentTestCase(unittest.TestCase):
 
     @hypothesis.given(document.rev())
     def test_rev(self, value):
-        self.assertIsInstance(value, str)
-        self.assertGreater(len(value), 0)
-
-        self.assertIn('-', value)
-        num, hash = value.split('-', 1)
-
-        self.assertTrue(num.isdigit())
-        int(num)
-
-        self.assertEqual(len(hash), 32)
-        self.assertTrue(set(hash).issubset(string.hexdigits))
+        self.check_rev(value)
 
     def test_deleted(self):
         self.assertFalse(hypothesis.find(document.deleted(), lambda _: True))
@@ -83,7 +73,7 @@ class DocumentTestCase(unittest.TestCase):
 
         for num, hash in zip(range(value['start'], 0, -1), value['ids']):
             rev = str(num) + '-' + hash
-            self.test_rev(rev)
+            self.check_rev(rev)
 
     @hypothesis.given(document.revs_info())
     def test_revs_info(self, value):
@@ -94,7 +84,7 @@ class DocumentTestCase(unittest.TestCase):
             self.assertIsInstance(item, dict)
             self.assertTrue(set(item).issubset({'rev', 'status'}))
 
-            self.test_rev(item['rev'])
+            self.check_rev(item['rev'])
             self.assertIn(item['status'], {'available', 'missing', 'deleted'})
 
     @hypothesis.given(document.local_seq())
@@ -108,7 +98,7 @@ class DocumentTestCase(unittest.TestCase):
         self.assertGreaterEqual(len(value), 0)
 
         for item in value:
-            self.test_rev(item)
+            self.check_rev(item)
 
     @hypothesis.given(document.deleted_conflicts())
     def test_deleted_conflicts(self, value):
@@ -116,4 +106,17 @@ class DocumentTestCase(unittest.TestCase):
         self.assertGreaterEqual(len(value), 0)
 
         for item in value:
-            self.test_rev(item)
+            self.check_rev(item)
+
+    def check_rev(self, value):
+        self.assertIsInstance(value, str)
+        self.assertGreater(len(value), 0)
+
+        self.assertIn('-', value)
+        num, hash = value.split('-', 1)
+
+        self.assertTrue(num.isdigit())
+        int(num)
+
+        self.assertEqual(len(hash), 32)
+        self.assertTrue(set(hash).issubset(string.hexdigits))
