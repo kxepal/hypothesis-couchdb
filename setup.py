@@ -57,6 +57,10 @@ setup(
         'hypothesis==1.11.0',
     ],
     extras_require={
-
+        'dev': [
+            'coverage==4.0.3',
+            'flake8==2.5.1',
+            'pylint==1.5.4',
+        ]
     },
 )

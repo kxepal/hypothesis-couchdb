@@ -21,10 +21,9 @@ venv:
 
 
 .PHONY: dev
-# target: dev - Setups developer environment
+# target: dev - Installs project for further developing
 dev:
-	${PIP} install coverage pylint flake8
-	${PYTHON} setup.py develop
+	@$(PIP) install -e .[dev]
 
 
 .PHONY: install
