@@ -2,7 +2,6 @@
 ignore=tests
 jobs=1
 persistent=yes
-profile=no
 unsafe-load-any-extension=no
 
 
@@ -12,7 +11,6 @@ disable=
 
 
 [REPORTS]
-comment=no
 evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
 files-output=no
 output-format=colorized
@@ -50,7 +48,6 @@ bad-names=foo,bar,baz,toto,tutu,tata
 good-names=i,j,k,ex,Run,_
 include-naming-hint=yes
 name-group=
-required-attributes=
 
 class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$
 class-attribute-name-hint=([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$
@@ -97,13 +94,11 @@ generated-members=
 ignore-mixin-members=yes
 ignored-classes=
 ignored-modules=
-zope=no
 
 
 [CLASSES]
 defining-attr-methods=__init__,__new__,setUp
 exclude-protected=_asdict,_fields,_replace,_source,_make
-ignore-iface-methods=
 valid-classmethod-first-arg=cls
 valid-metaclass-classmethod-first-arg=mcs
 

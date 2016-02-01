@@ -207,7 +207,8 @@ def url(base_url: str, *path: str, **params) -> str:
 
 
 def request(method: str, url: str, headers: dict, data: bytes=None) -> dict:
-    req = urllib.request.Request(url, method=method, data=data, headers=headers)
+    req = urllib.request.Request(url, method=method, data=data,
+                                 headers=headers)
     with urllib.request.urlopen(req) as response:
         return json.loads(response.read().decode('utf-8'))
 
