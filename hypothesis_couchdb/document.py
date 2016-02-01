@@ -23,11 +23,7 @@ __all__ = (
     'id',
     'rev',
     'deleted',
-    'revisions',
-    'revs_info',
     'local_seq',
-    'conflicts',
-    'deleted_conflicts',
 )
 
 
@@ -66,36 +62,9 @@ def deleted():
     return json.booleans()
 
 
-def revisions(min_value=1, max_value=None):
-    """Generates values for `_revisions` field."""
-    return st.integers(min_value=min_value, max_value=max_value).flatmap(
-        lambda num: json.objects(required_fields={
-            'ids': json.arrays(rev_id(), min_size=num, max_size=num,
-                               unique_by=lambda i: i),
-            'start': st.just(num)}))
-
-
-def revs_info(min_size=1, max_size=None):
-    """Generates values for `_revs_info` field."""
-    return json.arrays(json.objects(required_fields={
-        'rev': rev(),
-        'status': rev_status()
-    }), min_size=min_size, max_size=max_size)
-
-
 def local_seq():
     """Generates values for `_local_seq` field."""
     return st.integers(min_value=1)
-
-
-def conflicts(min_size=0, max_size=None):
-    """Generates values for `_conflicts` field."""
-    return json.arrays(rev(), min_size=min_size, max_size=max_size)
-
-
-def deleted_conflicts(min_size=0, max_size=None):
-    """Generates values for `_deleted_conflicts` field."""
-    return json.arrays(rev(), min_size=min_size, max_size=max_size)
 
 
 def rev_pos():
@@ -104,7 +73,3 @@ def rev_pos():
 
 def rev_id():
     return json.strings(alphabet=HEXDIGITS, min_size=32, max_size=32)
-
-
-def rev_status():
-    return st.sampled_from(('available', 'missing', 'deleted'))

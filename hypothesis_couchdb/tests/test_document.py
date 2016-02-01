@@ -60,53 +60,10 @@ class DocumentTestCase(unittest.TestCase):
         self.assertFalse(hypothesis.find(document.deleted(), lambda _: True))
         self.assertTrue(hypothesis.find(document.deleted(), lambda v: v))
 
-    @hypothesis.given(document.revisions())
-    def test_revisions(self, value):
-        self.assertIsInstance(value, dict)
-        self.assertTrue(set(value).issubset({'ids', 'start'}))
-
-        self.assertIsInstance(value['start'], int)
-        self.assertGreater(value['start'], 0)
-
-        self.assertIsInstance(value['ids'], list)
-        self.assertEqual(len(value['ids']), value['start'])
-
-        for num, hash in zip(range(value['start'], 0, -1), value['ids']):
-            rev = str(num) + '-' + hash
-            self.check_rev(rev)
-
-    @hypothesis.given(document.revs_info())
-    def test_revs_info(self, value):
-        self.assertIsInstance(value, list)
-        self.assertGreater(len(value), 0)
-
-        for item in value:
-            self.assertIsInstance(item, dict)
-            self.assertTrue(set(item).issubset({'rev', 'status'}))
-
-            self.check_rev(item['rev'])
-            self.assertIn(item['status'], {'available', 'missing', 'deleted'})
-
     @hypothesis.given(document.local_seq())
     def test_local_seq(self, value):
         self.assertIsInstance(value, int)
         self.assertGreater(value, 0)
-
-    @hypothesis.given(document.conflicts())
-    def test_conflicts(self, value):
-        self.assertIsInstance(value, list)
-        self.assertGreaterEqual(len(value), 0)
-
-        for item in value:
-            self.check_rev(item)
-
-    @hypothesis.given(document.deleted_conflicts())
-    def test_deleted_conflicts(self, value):
-        self.assertIsInstance(value, list)
-        self.assertGreaterEqual(len(value), 0)
-
-        for item in value:
-            self.check_rev(item)
 
     def check_rev(self, value):
         self.assertIsInstance(value, str)

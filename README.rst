@@ -99,11 +99,7 @@ Additionally provides strategies to generate valid values for special fields:
 - ``id``
 - ``rev``
 - ``deleted``
-- ``revisions``
-- ``revs_info``
 - ``local_seq``
-- ``conflicts``
-- ``deleted_conflicts``
 
 CouchDB has these fields prefixed with underscore ``_`` character while
 strategies are not (leading underscore has special mean in Python).
