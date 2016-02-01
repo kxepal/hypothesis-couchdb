@@ -13,12 +13,13 @@
 # the License.
 #
 
-import functools
 import math
 import unittest
 
 import hypothesis
-import hypothesis.strategies as st
+from hypothesis.errors import (
+    NoSuchExample,
+)
 
 from hypothesis_couchdb import (
     json,
@@ -27,57 +28,62 @@ from hypothesis_couchdb import (
 
 class JsonTestCase(unittest.TestCase):
 
-    @hypothesis.given(json.nulls())
-    def test_nulls(self, value):
-        self.check_null(value)
-    
-    @hypothesis.given(json.booleans())
-    def test_booleans(self, value):
+    def test_nulls(self):
+        st = json.nulls()
+        value = hypothesis.find(st, lambda _: True)
+        self.assertIsNone(value)
+
+    def test_booleans(self):
+        st = json.booleans()
+        value = hypothesis.find(st, lambda _: True)
         self.assertIsInstance(value, bool)
+        self.assertFalse(value)
     
     @hypothesis.given(json.numbers())
     def test_numbers(self, value):
         self.check_number(value)
 
-    @hypothesis.given(json.strings())
-    def test_strings(self, value):
-        self.check_string(value)
+    def test_strings(self):
+        st = json.strings()
+        value = hypothesis.find(st, lambda _: True)
+        self.assertIsInstance(value, str)
+        self.assertFalse('')
 
-    @hypothesis.given(json.arrays(json.numbers()))
-    def test_arrays(self, value):
+    def test_arrays(self):
+        st = json.arrays(json.numbers())
+        value = hypothesis.find(st, lambda _: True)
         self.assertIsInstance(value, list)
-        for item in value:
-            self.check_number(item)
+        self.assertEqual(value, [])
 
-    @hypothesis.given(json.objects(json.numbers()))
-    def test_objects(self, value):
+    def test_objects(self):
+        st = json.objects(json.values())
+        value = hypothesis.find(st, lambda _: True)
         self.assertIsInstance(value, dict)
-        for key, item in value.items():
-            self.check_string(key)
-            self.check_number(item)
+        self.assertEqual(value, {})
 
-    @hypothesis.given(json.objects(
-        required_fields={'test': json.nulls(),
-                         'passed': json.strings()}))
-    def test_objects_always_contains_required_fields(self, value):
-        self.assertIsInstance(value, dict)
-        self.assertEqual(set(value), {'test', 'passed'})
-        self.check_null(value['test'])
-        self.check_string(value['passed'])
+    def test_objects_always_contains_required_fields(self):
+        st = json.objects(required_fields={'test': json.nulls()})
+        with self.assertRaises(NoSuchExample):
+            hypothesis.find(st, lambda v: 'test' not in v)
 
     def test_objects_may_contains_optional_fields(self):
         st = json.objects(optional_fields={'test': json.nulls()})
-        self.assertEqual(hypothesis.find(st, lambda _: True), {})
+        self.assertEqual(hypothesis.find(st, lambda v: 'test' not in v),
+                         {})
         self.assertEqual(hypothesis.find(st, lambda v: 'test' in v),
                          {'test': None})
 
     def test_objects_with_required_and_optional_fields(self):
-        obj = json.objects(required_fields={'always': st.just(True)},
-                           optional_fields={'maybe': st.just(False)})
-        self.assertEqual(hypothesis.find(obj, lambda _: True),
-                         {'always': True})
-        self.assertEqual(hypothesis.find(obj, lambda v: 'maybe' in v),
-                         {'always': True, 'maybe': False})
+        st = json.objects(required_fields={'always': json.booleans()},
+                          optional_fields={'maybe': json.booleans()})
+        self.assertEqual(hypothesis.find(
+            st,
+            lambda v: v['always'] and 'maybe' not in v),
+            {'always': True})
+        self.assertEqual(hypothesis.find(
+            st,
+            lambda v: v['always'] and 'maybe' in v),
+            {'always': True, 'maybe': False})
 
     def test_objects_requires_any_fields_definition(self):
         with self.assertRaises(RuntimeError):
@@ -91,13 +97,7 @@ class JsonTestCase(unittest.TestCase):
         with self.assertRaises(TypeError):
             json.objects(optional_fields={42: 24})
 
-    def check_null(self, value):
-        self.assertIsNone(value)
-
     def check_number(self, value):
         self.assertIsInstance(value, (int, float))
         self.assertFalse(math.isinf(value))
         self.assertFalse(math.isnan(value))
-
-    def check_string(self, value):
-        self.assertIsInstance(value, str)
