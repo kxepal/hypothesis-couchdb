@@ -23,7 +23,14 @@ To start use it, you need to update Hypothesis settings::
   from hypothesis_couchdb.example_db import CouchExampleDB
 
   # default database url is http://localhost:5984/hypothesis
-  hypothesis.Settings.default = hypothesis.Settings(database=CouchExampleDB())
+  settings = hypothesis.setting(database=CouchExampleDB()
+
+  # now you can either register it as own profile to use it global-wide
+  hypothesis.settings.register_profile('couchdb', settings)
+  hypothesis.settings.load_profile('couchdb')
+
+  # or use it in-place as decorator or context manager in your tests.
+  # See Hypothesis documentation about settings and profiles for more.
 
 The `CouchExampleDB` ensures that database is exists and design document too,
 so for initial setup may require administrator privileges in order to create
@@ -46,7 +53,7 @@ use to store examples in the target database. To make auth works, specify
 credentials on `CouchExampleDB` init like::
 
   CouchExampleDB('https://couchdb.intranet/hypothesis',
-                 basic_auth_credentials=('hypothesis', 'passoword'))
+                 basic_auth_credentials=('hypothesis', 'password'))
 
 Make sure you pass authentication over secure HTTPS connection!
 
@@ -92,11 +99,7 @@ Additionally provides strategies to generate valid values for special fields:
 - ``id``
 - ``rev``
 - ``deleted``
-- ``revisions``
-- ``revs_info``
 - ``local_seq``
-- ``conflicts``
-- ``deleted_conflicts``
 
 CouchDB has these fields prefixed with underscore ``_`` character while
 strategies are not (leading underscore has special mean in Python).
