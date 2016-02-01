@@ -17,8 +17,8 @@
 __version_info__ = (0, 1, 0, 'dev', 0)
 __version__ = '%(version)s%(tag)s%(build)s' % {
     'version': '.'.join(map(str, __version_info__[:3])),
-    'tag': '-' + __version_info__[3] if __version_info__[3] else '',
-    'build': '.' + str(__version_info__[4]) if __version_info__[4] else ''
+    'tag': '.' + __version_info__[3] if __version_info__[3] else '',
+    'build': '' + str(__version_info__[4]) if __version_info__[3] else ''
 }
 
 
