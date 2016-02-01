@@ -31,7 +31,7 @@ class DocumentTestCase(unittest.TestCase):
 
     def test_document_optional_fields(self):
         st = document.documents(optional_fields={'test': json.nulls()})
-        self.assertEqual(hypothesis.find(st, lambda _: True),
+        self.assertEqual(hypothesis.find(st, lambda v: 'test' not in v),
                          {})
         self.assertEqual(hypothesis.find(st, lambda v: 'test' in v),
                          {'test': None})
